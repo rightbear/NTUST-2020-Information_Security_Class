@@ -79,10 +79,8 @@ int main() {
 		}
 
 		//生成填滿金鑰的表格
-		char** table = new char*[5];
-		for (int i = 0; i < 5; i++) {
-			table[i] = new char[5];
-		}
+		char table[5][5];
+
 		int counter = 0;
 		for (int i = 0; i < 5; i++) {
 			for (int j = 0; j < 5; j++) {

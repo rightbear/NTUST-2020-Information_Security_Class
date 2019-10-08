@@ -168,7 +168,7 @@ int main() {
 		//將密文的與金鑰做XOR，形成明文
 		if (Key.length() >= Ciphertext.length()) {
 			for (int i = 0; i < Ciphertext.length(); i++) {
-				Plaintext[i] = Plaintext[i] ^ Key[i];
+				Plaintext[i] = (Plaintext[i]-'A') ^ (Key[i]-'A');
 			}
 		}
 		//若密鑰過短，將總密鑰長度擴充至與密文同長度
@@ -181,13 +181,13 @@ int main() {
 				Realkey = Realkey + Key[i];
 			}
 			for (int i = 0; i < Ciphertext.length(); i++) {
-				Plaintext[i] = Plaintext[i] ^ Realkey[i];
+				Plaintext[i] = (Plaintext[i]-'A') ^ (Realkey[i]-'A');
 			}
 		}
 
 		for (int i = 0; i < Plaintext.length(); i++) {
-			if (65 <= Plaintext[i] && Plaintext[i] <= 90)
-				Plaintext[i] += 32;
+			if (0 <= Plaintext[i] && Plaintext[i] <= 26)
+				Plaintext[i] += 'a';
 		}
 
 		cout << Plaintext;

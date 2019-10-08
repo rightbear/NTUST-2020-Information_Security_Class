@@ -91,10 +91,8 @@ int main() {
 		}
 
 		//生成填滿金鑰的表格
-		char** table = new char*[5];
-		for (int i = 0; i < 5; i++) {
-			table[i] = new char[5];
-		}
+		char table[5][5];
+		
 		int counter = 0;
 		for (int i = 0; i < 5; i++) {
 			for (int j = 0; j < 5; j++) {
@@ -168,7 +166,7 @@ int main() {
 		//將明文的與金鑰做XOR，形成密文
 		if (Key.length() >= Plaintext.length()) {
 			for (int i = 0; i < Plaintext.length(); i++) {
-				Ciphertext[i] = Ciphertext[i] ^ Key[i];
+				Ciphertext[i] = (Ciphertext[i]-'a') ^ (Key[i]-'A');
 			}
 		}
 		//若密鑰過短，將總密鑰長度擴充至與明文同長度
@@ -181,13 +179,13 @@ int main() {
 				Realkey = Realkey + Key[i];
 			}
 			for (int i = 0; i < Plaintext.length(); i++) {
-				Ciphertext[i] = Ciphertext[i] ^ Realkey[i];
+				Ciphertext[i] = (Ciphertext[i] -'a') ^ (Realkey[i]-'A');
 			}
 		}
 
 		for (int i = 0; i < Ciphertext.length(); i++) {
-			if (97 <= Ciphertext[i] && Ciphertext[i] <= 122)
-				Ciphertext[i] -= 32;
+			if (0 <= Ciphertext[i] && Ciphertext[i] <= 26)
+				Ciphertext[i] += 'A';
 		}
 
 		cout << Ciphertext;

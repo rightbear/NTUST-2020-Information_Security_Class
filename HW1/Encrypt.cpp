@@ -1,228 +1,301 @@
 #include<iostream>
-#include<stdlib.h>
 #include<string>
-#include<cmath>
-#include<vector>
 
 using namespace std;
-void encryptCaesar(int key, string plaintext);
-void encryptPlayfair(string key, string plaintext);
-void encryptAutokey(string word, string plaintext);
-void encryptRowtransposition(string key, string plaintext);
-void encryptRailFence(int key, string plaintext);
 
 int main() {
-	string CipherMode , plaintext;
+	string CipherMode;
 	cin >> CipherMode;
 
 	//凱薩密碼
 	//(假設前提:位移結果不超過ASCII範圍)
-	if (CipherMode == "caesar")
-	{
-		int key;
-		cin >> key >> plaintext;
-		encryptCaesar(key, plaintext);
+	if (CipherMode == "caesar") {
+		string Plaintext, Ciphertext;
+		int Key;
+		cin >> Key >> Plaintext;
+		Ciphertext = Plaintext;
+
+		//將每一字母位移特定距離，形成密文
+		for (int i = 0; i < Plaintext.length(); i++) {
+			Ciphertext[i] = ((Ciphertext[i] - 'a' + Key) % 26 + 'A');
+		}
+
+		cout << Ciphertext;
 	}
 
 	//波雷費密碼
 	//(假設前提:明文不會有連續的重複字母、明文只有偶數個字母、明文長度不超過25、明文最多只會有25種字母且都會在密鑰中、密鑰表格中的j要視為i)
-	else if (CipherMode == "playfair")
-	{
-		string key;
-		cin >> key >> plaintext;
-		encryptPlayfair(key, plaintext);
+	else if (CipherMode == "playfair") {
+		string Plaintext, Ciphertext, Key;
+		cin >> Key >> Plaintext;
+		Ciphertext = Plaintext;
+		string NewKey = "";
+
+		//將原金鑰中的j都先換成i、小寫
+		for (int i = 0; i < Key.length(); i++) {
+			if (Key[i] >= 65 && Key[i] <= 90) {
+				Key[i] += 32;
+			}
+			if (Key[i] == 'j')
+				Key[i] = 'i';
+		}
+
+		//原明文中的j都先換成i
+		for (int i = 0; i < Ciphertext.length(); i++) {
+			if (Ciphertext[i] == 'j')
+				Ciphertext[i] = 'i';
+		}
+
+		for (int i = 0; i < Key.length(); i++) {
+			int judge = 0;
+			for (int j = 0; j < NewKey.length(); j++) {
+				if (NewKey[j] == (Key[i] + 32)) {
+					judge = 1;
+					break;
+				}
+			}
+			if (judge == 0) {
+				NewKey = NewKey + Key[i];
+			}
+		}
+
+		//將原金鑰擴展成25個字母構成的新金鑰
+		if (NewKey.length() < 25) {
+			int additionalLength = 5 * 5 - NewKey.length();
+			//確認要額外填入的字母，與密鑰中會出現的字母不重複
+			int temp = 97;
+			for (int i = 0; i < additionalLength; i++) {
+				for (int j = temp; j <= 122; j++) {
+					//遇到j就跳過，因為金鑰中不能出現j
+					if (char(j) == 'j') {
+						continue;
+					}
+					else {
+						int judge = 0;
+						for (int k = 0; k < NewKey.length(); k++) {
+							if (char(j) == NewKey[k]) {
+								judge = 1;
+								break;
+							}
+						}
+						if (judge == 0) {
+							NewKey = NewKey + char(j);
+							temp = j + 1;
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		//生成填滿金鑰的表格
+		char table[5][5];
+		
+		int counter = 0;
+		for (int i = 0; i < 5; i++) {
+			for (int j = 0; j < 5; j++) {
+				table[i][j] = NewKey[counter];
+				counter++;
+			}
+		}
+
+		//將明文依照金鑰提供的順序更換字母，形成密文
+		for (int i = 0; i < Ciphertext.length(); i = i + 2) {
+			int row1, col1, row2, col2;
+			int judge1 = 0, judge2 = 0;
+			for (int row = 0; row < 5; row++) {
+				for (int col = 0; col < 5; col++) {
+					if (table[row][col] == Ciphertext[i]) {
+						row1 = row;
+						col1 = col;
+						judge1 = 1;
+						break;
+					}
+				}
+				if (judge1 == 1)
+					break;
+			}
+			for (int row = 0; row < 5; row++) {
+				for (int col = 0; col < 5; col++) {
+					if (table[row][col] == Ciphertext[i + 1]) {
+						row2 = row;
+						col2 = col;
+						judge2 = 1;
+						break;
+					}
+				}
+				if (judge2 == 1)
+					break;
+			}
+
+			if (row1 == row2) {
+				col1 = (col1 + 1) % 5;
+				col2 = (col2 + 1) % 5;
+
+			}
+			else if (col1 == col2) {
+				row1 = (row1 + 1) % 5;
+				row2 = (row2 + 1) % 5;
+			}
+			else {
+				int tempCol = col2;
+				col2 = col1;
+				col1 = tempCol;
+			}
+
+			Ciphertext[i] = table[row1][col1];
+			Ciphertext[i + 1] = table[row2][col2];
+
+			if (97 <= Ciphertext[i] && Ciphertext[i] <= 122)
+				Ciphertext[i] -= 32;
+			if (97 <= Ciphertext[i + 1] && Ciphertext[i + 1] <= 122)
+				Ciphertext[i + 1] -= 32;
+		}
+
+		cout << Ciphertext;
 	}
 
 	//一次性加密
-	else if (CipherMode == "vernam")
-	{
-		string key;
-		cin >> key >> plaintext;
-		encryptAutokey(key, plaintext);
+	else if (CipherMode == "vernam") {
+		string Plaintext, Ciphertext, Key;
+		cin >> Key >> Plaintext;
+		Ciphertext = Plaintext;
+
+		//將明文的與金鑰做XOR，形成密文
+		if (Key.length() >= Plaintext.length()) {
+			for (int i = 0; i < Plaintext.length(); i++) {
+				Ciphertext[i] = (Ciphertext[i]-'a') ^ (Key[i]-'A');
+			}
+		}
+		//若密鑰過短，將總密鑰長度擴充至與明文同長度
+		else {
+			string Realkey;
+			for (int i = 0; i < (Plaintext.length() / Key.length()); i++) {
+				Realkey = Realkey + Key;
+			}
+			for (int i = 0; i < (Plaintext.length() % Key.length()); i++) {
+				Realkey = Realkey + Key[i];
+			}
+			for (int i = 0; i < Plaintext.length(); i++) {
+				Ciphertext[i] = (Ciphertext[i] -'a') ^ (Realkey[i]-'A');
+			}
+		}
+
+		for (int i = 0; i < Ciphertext.length(); i++) {
+			Ciphertext[i] += 'A';
+		}
+
+		cout << Ciphertext;
 	}
 
 	//替換式密碼
-	else if (CipherMode == "row")
-	{
-		string key;
-		cin >> key >> plaintext;
-		encryptRowtransposition(key, plaintext);
+	else if (CipherMode == "row") {
+		string Plaintext, Ciphertext, Key;
+		int row, column;
+		cin >> Key >> Plaintext;
+		Ciphertext = Plaintext;
+		column = Key.length();
+
+		//如果明文無法填滿以金鑰長度作為行數的表格，則填入'\0'
+		if (Plaintext.length() % Key.length()) {
+			row = (Plaintext.length() / Key.length()) + 1;
+
+			int additionalLength = Key.length() - (Plaintext.length() % Key.length());
+			for (int i = 0; i < additionalLength; i++) {
+				Plaintext = Plaintext + '\n';
+			}
+		}
+		else {
+			row = Plaintext.length() / Key.length();
+		}
+		
+		//生成填滿明文的表格
+		char** table = new char*[column];
+		for (int i = 0; i < column; i++) {
+			table[i] = new char[row];
+		}
+
+		for (int i = 0; i < row; i++) {
+			for (int j = 0; j < column; j++) {
+				table[i][j] = Plaintext[i*column + j];
+			}
+		}
+
+		//將明文依照金鑰提供的順序重新排列，形成密文
+		int counter = 0;
+		for (int i = 1; i <= column; i++) {
+			for (int j = 0; j < column; j++) {
+				if (Key[j] != (i + 48))
+					continue;
+				else {
+					for (int k = 0; k < row; k++) {
+
+						if (table[k][j] != '\n') {
+							Ciphertext[counter] = table[k][j];
+							if (97 <= Ciphertext[counter] && Ciphertext[counter] <= 122) {
+								Ciphertext[counter] -= 32;
+							}
+							counter++;
+						}
+					}
+					break;
+				}
+			}
+		}
+
+		cout << Ciphertext;
 	}
 
 	//籬笆密碼
-	else if (CipherMode == "rail_fence")
-	{
-		int key;
-		cin >> key >> plaintext;
-		encryptRailFence(key, plaintext);
-	}
-	system("pause");
-}
-void encryptCaesar(int key, string plaintext)
-{
-	string ciphertext = "";
-	for (int i = 0; i < plaintext.size(); i++)
-	{
-		ciphertext += toupper('A' + (plaintext[i] - 'a' + key) % 26);
-	}
-	cout << ciphertext;
-}
+	else if (CipherMode == "rail_fence") {
+		string Plaintext, Ciphertext;
+		int Key;
+		int row, column;
+		cin >> Key >> Plaintext;
+		Ciphertext = Plaintext;
+		column = Plaintext.length();
+		row = Key;
 
-void encryptPlayfair(string key, string plaintext)
-{
-	char matrix[5][5];
-	int count = 0;
-	string temp = "";
-	//將原金鑰中的J都先換成I
-	for (int i = 0; i < key.size(); i++) {
+		//生成填滿明文的表格
+		char** table = new char*[column];
+		for (int i = 0; i < column; i++) {
+			table[i] = new char[row];
+		}
 
-		if (key[i] == 'J')
-			key[i] = 'I';
-	}
-	//原明文中的j都先換成i
-	for (int i = 0; i < plaintext.size(); i++) {
-		if (plaintext[i] == 'j')
-			plaintext[i] = 'i';
-	}
-	for (int i = 0; i < key.size(); i++)
-	{
-		if (temp.find(key[i]) == -1)//避免重複
-		{
-			matrix[count / 5][count % 5] = key[i];
-			temp += key[i];
-			count++;
-		}
-	}
-	for (char c = 'A'; c <= 'Z'; c++)
-	{
-		if (c == 'J') continue;
-		if (key.find(c) == -1)
-		{
-			matrix[count / 5][count % 5] = c;
-			count++;
-		}
-	}
-	int row1, row2, col1, col2;
-	for (int i = 0; i < plaintext.size(); i++)
-	{
-		for (int c = 0; c < 25; c++)
-		{
-			if (matrix[c / 5][c % 5] == toupper(plaintext[i]))
-			{
-				row1 = c / 5;
-				col1 = c % 5;
+		for (int i = 0; i < row; i++) {
+			for (int j = 0; j < column; j++) {
+				table[i][j] = '\n';
 			}
 		}
-		i++;
-		for (int c = 0; c < 25; c++)
-		{
-			if (matrix[c / 5][c % 5] == toupper(plaintext[i]))
-			{
-				row2 = c / 5;
-				col2 = c % 5;
-			}
-		}
-		if (row1 == row2)
-		{
-			col1++, col2++;
-			if (col1 == 5)
-			{
-				col1 = 0;
-			}
-			if (col2 == 5)
-			{
-				col2 = 0;
-			}
-			cout << matrix[row1][col1] << matrix[row2][col2];
-		}
-		else if (col1 == col2)
-		{
-			row1++, row2++;
-			if (row1 == 5)
-			{
-				row1 = 0;
-			}
-			if (row2 == 5)
-			{
-				row2 = 0;
-			}
-			cout << matrix[row1][col1] << matrix[row2][col2];
-		}
-		else
-		{
-			cout << matrix[row1][col2] << matrix[row2][col1];
-		}
-	}
-	cout << endl;
-}
 
-void encryptAutokey(string word, string plaintext)
-{
-	string key = word, ciphertext = "";
-	for (int i = 0; i < plaintext.size() - word.size(); i++)
-	{
-		key += toupper(plaintext[i]);
-	}
-	for (int i = 0; i < key.size(); i++)
-	{
-		ciphertext += 'A' + ((key[i] - 'A') ^ (plaintext[i] - 'a'));
-	}
-	cout << ciphertext << endl;
-}
+		//將明文以波浪狀填入表格，依循還過程分組
+		int tempRow = 0, rowAdder = -1;
+		int group = 2 * Key - 2;
 
-void encryptRowtransposition(string key, string plaintext)
-{
-	vector<vector<char> > ciphertext;
-	int row = ceil((float)plaintext.size() / key.size()), col = key.size();
-	vector<char> temp;
-	for (int i = 0; i < col; i++)
-	{
-		temp.push_back(' ');
-	}
-	for (int i = 0; i < row; i++)
-	{
-		ciphertext.push_back(temp);
-	}
+		for (int i = 0; i < column; i++) {
+			table[tempRow][i] = Plaintext[i];
 
-	for (int i = 0; i < plaintext.size(); i++)
-	{
-		ciphertext[i / col][i % col] = toupper(plaintext[i]);
-	}
+			if (tempRow % group == 0 || tempRow % group == (Key - 1))
+				rowAdder *= -1;
 
-	for (int i = 1; i <= col; i++)
-	{
-		for (int j = 0; j < row; j++)
-		{
-			if (ciphertext[j][key.find(i + '0')] != ' ')
-			{
-				cout << ciphertext[j][key.find(i + '0')];
+			tempRow = tempRow + rowAdder;
+		}
+
+		//依照密鑰，以遞增的形式填出特定列中的表格字元，形成密文
+		int counter = 0;
+		for (int i = 0; i < Key; i++) {
+			for (int j = 0; j < column; j++) {
+				if (table[i][j] != '\n') {
+					Ciphertext[counter] = table[i][j];
+
+					if (97 <= Ciphertext[counter] && Ciphertext[counter] <= 122)
+						Ciphertext[counter] -= 32;
+
+					counter++;
+				}
 			}
 		}
-	}
-}
 
-void encryptRailFence(int key, string plaintext)
-{
-	char** ciphertext;
-	ciphertext = new char*[key];
-	for (int i = 0; i < key; i++)
-	{
-	    int num = ceil(float(plaintext.size()) / key);
-		ciphertext[i] = new char[num];
-	}
-	for (int i = 0; i < plaintext.size(); i++)
-	{
-		ciphertext[i % key][i / key] = toupper(plaintext[i]);
-	}
-	for (int i = 0, count = 0; i < key; i++)
-	{
-		for (int j = 0; j < ceil(float(plaintext.size()) / key); j++, count++)
-		{
-			if (count != plaintext.size())
-			{
-				cout << ciphertext[i][j];
-			}
-			else return;
-		}
+		cout << Ciphertext;
 	}
 }

@@ -16,9 +16,14 @@ int main() {
 
 		//將每一字母位移特定距離，形成明文
 		for (int i = 0; i < Ciphertext.length(); i++) {
-			Plaintext[i] -= Key;
-			if (65 <= Plaintext[i] && Plaintext[i] <= 90)
-				Plaintext[i] += 32;
+			Plaintext[i] = Plaintext[i] - 'A' - Key;
+
+			//如果Plaintext位移完<0，則必需從z開始循環
+			if (Plaintext[i] < 0) {
+				Plaintext[i] += 26;
+			}
+
+			Plaintext[i] = (Plaintext[i] % 26) + 'a';
 		}
 		cout << Plaintext;
 	}
@@ -184,8 +189,7 @@ int main() {
 		}
 
 		for (int i = 0; i < Plaintext.length(); i++) {
-			if (0 <= Plaintext[i] && Plaintext[i] <= 26)
-				Plaintext[i] += 'a';
+			Plaintext[i] += 'a';
 		}
 
 		cout << Plaintext;
@@ -275,7 +279,7 @@ int main() {
 				Plaintext[counter] = table[i][j];
 
 				if (65 <= Plaintext[counter] && Plaintext[counter] <= 90)
-					Plaintext[i] += 32;
+					Plaintext[counter] += 32;
 
 				counter++;
 				if (counter == Ciphertext.length()) {

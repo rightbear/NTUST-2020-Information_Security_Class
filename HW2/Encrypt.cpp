@@ -21,24 +21,24 @@ int main()
 	plaintext = convert_to_bit_pattern(plaintext_hex);
 	key = convert_to_bit_pattern(key_hex);
 
-	plaintext = permutation(plaintext, 'i');
-	subkey = keyShrink(key);
+	plaintext = permutation(plaintext, 'i');//initial permutation
+	subkey = keyShrink(key);//64bits->56bits
 	for (int i = 1; i <= 16; i++)
 	{
 		switch (i)
 		{
 		case 1: case 2: case 9: case 16:
-			subkey = keyTransform(subkey, 1);
+			subkey = keyTransform(subkey, 1);//rotate left 1 position
 			break;
 		default:
-			subkey = keyTransform(subkey, 2);
+			subkey = keyTransform(subkey, 2);//rotate left 2 position
 		}
-		permutedKey = keyPermute(subkey);
-		plaintext = oneRound(plaintext, permutedKey);
+		permutedKey = keyPermute(subkey);//key re-permutation(shrink)
+		plaintext = oneRound(plaintext, permutedKey);//f-function, XOR
 	}
-	ciphertext += plaintext.substr(32, 32);
-	ciphertext += plaintext.substr(0, 32);
-	ciphertext = permutation(ciphertext, 'f');
+	ciphertext += plaintext.substr(32, 32);//swap
+	ciphertext += plaintext.substr(0, 32);//swap
+	ciphertext = permutation(ciphertext, 'f');//final permutation
 	cout << convert_to_hex(ciphertext) << endl;
 	system("pause");
 }
@@ -50,7 +50,7 @@ string convert_to_bit_pattern(string original)
 	char lower[16] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
 	char upper[16] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
 	string answer = "";
-	for (int i = 2; i < 18; i++)
+	for (int i = 2; i < 18; i++)//skip 0x
 	{
 		for (int j = 0; j < 16; j++)
 		{
@@ -84,14 +84,14 @@ string permutation(string original, char c)
 							  35, 3,43,11,51,19,59,27,
 							  34, 2,42,10,50,18,58,26,
 							  33, 1,41, 9,49,17,57,25};
-	if (c == 'i')
+	if (c == 'i')//initial permutation
 	{
 		for (int i = 0; i < 64; i++)
 		{
 			answer[i] = original[IPtable[i] - 1];
 		}
 	}
-	else
+	else//final permutation
 	{
 		for (int i = 0; i < 64; i++)
 		{
@@ -112,11 +112,11 @@ string oneRound(string original, string roundKey)
 		left[i] = original[i];
 		right[i] = original[i + 32];
 	}
-	answer += right;
+	answer += right;//original.rightthalf = new.lefthalf
 	temp = f_Function(right, roundKey);
-	for (int i = 0; i < 32; i++)
+	for (int i = 0; i < 32; i++)//new.righthalf = original.lefthalf XOR f-func(original.righthalf, roundkey)
 	{
-		answer += temp[i] ^ left[i];
+		answer += temp[i] ^ left[i];//XOR
 	}
 	return answer;
 }
@@ -181,7 +181,7 @@ string f_Function(string right, string roundKey)
 		temp[i] = temp[i] ^ roundKey[i];
 	}
 	int position = 0, output;
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < 8; i++)//every round: transform 6-bits to 4-bits(with substitution)
 	{
 		if (temp[i * 6] == 1) position += 32;
 		if (temp[i * 6 + 5] == 1)position += 16;
@@ -210,6 +210,7 @@ string keyShrink(string oriKey)
 {
 	string answer;
 	answer.resize(56);
+	//8,16,24,etc... bits will be remove from oriKey
 	int table[56] = {57,49,41,33,25,17,9,
 					 1,58,50,42,34,26,18,
 					 10,2,59,51,43,35,27,
@@ -227,7 +228,7 @@ string keyShrink(string oriKey)
 
 string keyTransform(string shrinkKey, int rotateNum)
 {
-	string left, right, answer;
+	string left, right, answer;//each half rotates left 1 or 2 bits, depend on rotateNum
 	if (rotateNum == 1)
 	{
 		left = shrinkKey.substr(1,27);
@@ -250,6 +251,7 @@ string keyPermute(string subkey)
 {
 	string answer;
 	answer.resize(48);
+	//56-bits to 48 bits
 	int table[48] = {14,17,11,24, 1, 5,
 					  3,28,15, 6,21,10,
 					 23,19,12, 4,26, 8,

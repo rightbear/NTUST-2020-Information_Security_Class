@@ -56,7 +56,8 @@ int main() {
 	string bin_FinalPermutext = Final_Permuntation(Round_text);
 	string hex_PlainText = bin_str_to_hex_str(bin_FinalPermutext, 16);
 
-	cout << hex_PlainText;
+	cout << hex_PlainText << endl;
+	system("pause");
 }
 
 //***********************»Pplaintext¦³Ãö***********************

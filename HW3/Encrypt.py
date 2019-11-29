@@ -27,9 +27,6 @@ def encrypt_file(key, in_filename, mode, out_filename=None, chunksize=AES.block_
         out_filename = in_filename[:-4] + "_" + mode + '.ppm'
     encryptor = AES.new(key, AES.MODE_ECB)
     filesize = os.path.getsize(in_filename)
-    #IV預設為"0000000000000000"
-    #iv = os.urandom(16).encode('utf-8')
-    iv = ("0" * chunksize).encode('utf-8')
     
     if mode == "ECB":
         with open(in_filename, 'rb') as infile:

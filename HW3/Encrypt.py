@@ -59,8 +59,9 @@ def encrypt_file(key, in_filename, mode, out_filename=None, chunksize=AES.block_
                 outfile.write(chunk)
                 pos = len(chunk)
                 
+                #計算目前圖片的檔案大小，並將資訊寫入新的圖片，解密時就能直接提取
                 outfile.write(struct.pack('<Q', filesize))
-                 #隨機產生16位元的IV
+                 #隨機產生16位元的IV，並將IV寫入新的圖片，解密時就能直接提取
                 iv = os.urandom(16)
                 outfile.write(iv)
                 
@@ -88,8 +89,9 @@ def encrypt_file(key, in_filename, mode, out_filename=None, chunksize=AES.block_
                 outfile.write(chunk)
                 pos = len(chunk)
                 
+                #計算目前圖片的檔案大小，並寫入新的圖片，解密時就能直接提取
                 outfile.write(struct.pack('<Q', filesize))
-                 #隨機產生16位元的IV
+                #隨機產生16位元的IV，並寫入新的圖片，解密時就能直接提取
                 iv = os.urandom(16)
                 outfile.write(iv)
                 

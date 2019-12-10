@@ -3,16 +3,19 @@
 
 import random
 
-
-small_prime = [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199,
-211, 223, 227, 229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, 317, 331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397,
-401, 409, 419, 421, 431, 433, 439, 443, 449, 457, 461, 463, 467, 479, 487, 491, 499, 503, 509, 521, 523, 541, 547, 557, 563, 569, 571, 577, 587, 593, 599,
-601, 607, 613, 617, 619, 631, 641, 643, 647, 653, 659, 661, 673, 677, 683, 691, 701, 709, 719, 727, 733, 739, 743, 751, 757, 761, 769, 773, 787, 797,
-809, 811, 821, 823, 827, 829, 839, 853, 857, 859, 863, 877, 881, 883, 887, 907, 911, 919, 929, 937, 941, 947, 953, 967, 971, 977, 983, 991, 997]
+small_prime = [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59,
+61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139,
+149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223, 227, 229,
+233, 239, 241, 251, 257, 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, 317,
+331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397, 401, 409, 419, 421,
+431, 433, 439, 443, 449, 457, 461, 463, 467, 479, 487, 491, 499, 503, 509, 521,
+523, 541, 547, 557, 563, 569, 571, 577, 587, 593, 599, 601, 607, 613, 617, 619,
+631, 641, 643, 647, 653, 659, 661, 673, 677, 683, 691, 701, 709, 719, 727, 733,
+739, 743, 751, 757, 761, 769, 773, 787, 797, 809, 811, 821, 823, 827, 829, 839,
+853, 857, 859, 863, 877, 881, 883, 887, 907, 911, 919, 929, 937, 941, 947, 953, 967, 971, 977, 983, 991, 997]
 
 
 def Miller_Robin(N, times=10):
-
     # Implementation uses the Miller-Rabin Primality Test
     # The optimal number of rounds for this test is 10
     m = N - 1
@@ -24,7 +27,7 @@ def Miller_Robin(N, times=10):
             break
     
     a = random.randint(2, N-2)
-    b = SAM(a, m, N)
+    b = SAM(a, m, N)              # Using SAM to accelerate
     
     if (b != 1) & (b != (N-1)):
         i = 1
@@ -55,7 +58,6 @@ def EEA(integer1, integer2):
     return gcd, x, y
 
 
-
 def SAM(base, exp, n):
     bin_exp = bin(exp)
     value = base
@@ -79,7 +81,7 @@ def CRT(base, exp, prime_p, prime_q):
     exp_p = exp % (prime_p - 1)
     exp_q = exp % (prime_q - 1)
     q_inv = EEA(prime_q, prime_p)[1] % prime_p
-    m1 = SAM(base, exp_p, prime_p)
+    m1 = SAM(base, exp_p, prime_p)              # Using SAM to accelerate
     m2 = SAM(base, exp_q, prime_q)
     h = (q_inv * (m1 - m2)) % prime_p
     value = m2 + h * prime_q
@@ -104,7 +106,7 @@ if __name__ == '__main__':
         start = input("\n請輸入 {0:s} 以初始化加解密用的金鑰: ".format("\"Init\""))
         if(start == "Init"): break
     
-    # Step1: Decide primes p and q, using  Miller-Robin Test.
+    # Step1: Decide primes p and q, using  Primes under 1000 and Miller-Robin Test to check.
     while True:
         p = random.randint(2 ** 512, 2 ** 513 - 1)
         check = False
@@ -129,7 +131,7 @@ if __name__ == '__main__':
         if check == True: continue
         elif (q != p) & Miller_Robin(q): break
 
-    print("The two primes are =>\n\t(1){0:d}\n\t(2){1:d}".format(p, q))
+    print("\nThe two primes are =>\n\t(1){0:d}\t(2){1:d}".format(p, q))
     
     # Step2: Decide RSA keys, using Extended Euclidean Algorithm (EEA)
     n = p * q
@@ -143,7 +145,8 @@ if __name__ == '__main__':
             d = d % phi_n
             break
 
-    print("The phi is =>\n\t{0:d}\nThe encrypt exponent is =>\n\t{1:d}          \nThe decrypt exponent is =>\n\t{2:d}".format(phi_n, e, d))
+    print("The phi is =>\n\t{0:d}\n\nThe encrypt exponent is =>\n\t{1:d}\
+            \n\nThe decrypt exponent is =>\n\t{2:d}".format(phi_n, e, d))
     
     # Step3: Let users choose working mode, encryption or decryption 
     while True :
@@ -152,14 +155,14 @@ if __name__ == '__main__':
             
     # Step4: Design encrypting procedure, using Square-and-Multiply(SAM)
             if mode == "Encrypt":
-                plaintext = input("Please input your plaintext: ")
+                plaintext = input("\nPlease input your plaintext: ")
                 ciphertext = Encryption(plaintext, e, n)
-                print("Your final ciphertext is {0}".format(ciphertext))
+                print("\nYour final ciphertext is {0}".format(ciphertext))
                                   
     # Step5: Design decrypting procedure, using Chinese-Remainder-Theorem(CRT)
             elif mode == "Decrypt":
-                ciphertext = input("Please input your ciphertext: ")
+                ciphertext = input("\nPlease input your ciphertext: ")
                 plaintext = Decryption(ciphertext, d, p, q)
-                print("Your final plaintext is \"{0:s}\"".format(plaintext))
+                print("\nYour final plaintext is \"{0:s}\"".format(plaintext))
                                   
         elif mode == "End": break

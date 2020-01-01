@@ -1,15 +1,10 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[7]:
-
 
 from random import randrange
 from hashlib import sha1
 from gmpy2 import xmpz, to_binary, is_prime
-
-
-# In[8]:
 
 
 #用 extended euclidean algorithm 找 mod 反元素
@@ -31,9 +26,6 @@ def SAM(base, exp, n):
         if(bin_exp[i:i+1] == '1'):
             value = (value * base) % n
     return value
-
-
-# In[9]:
 
 
 #代入指定的p, q長度以生成p,q,alpha
@@ -100,9 +92,6 @@ def generate_keys(integer_alpha, prime_p, prime_divisor_q):
     return integer_d, integer_beta
 
 
-# In[10]:
-
-
 #簽章的流程
 def Signing(message, prime_p, prime_divisor_q, alpha, integer_d):
     kE = randrange(2, prime_divisor_q)
@@ -116,9 +105,6 @@ def Signing(message, prime_p, prime_divisor_q, alpha, integer_d):
     signature_s = ((hash_message + integer_d * signature_r) * kE_inv) % prime_divisor_q
     
     return signature_r, signature_s
-
-
-# In[11]:
 
 
 #驗章的流程
@@ -137,9 +123,6 @@ def Verifying(message, signature_r, signature_s, prime_p, prime_divisor_q, alpha
     else: result = "invalid"
     
     return result
-
-
-# In[12]:
 
 
 if __name__ == '__main__':
